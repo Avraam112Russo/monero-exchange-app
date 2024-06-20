@@ -16,7 +16,7 @@ public class BotInitializer {
     @PostConstruct
     public void init() {
         try {
-            String botToken = "7438604237:AAH-rHbOYV5xQ1eamxwSKa9XdUuRM_hysAs";
+            String botToken = "";
              TelegramBotsLongPollingApplication botsApplication =
                     new TelegramBotsLongPollingApplication();
             botsApplication.registerBot(botToken, telegramBot);

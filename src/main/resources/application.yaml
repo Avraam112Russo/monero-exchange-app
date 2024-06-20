@@ -25,7 +25,7 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 server:
-  port: 8090
+  port: 8091
 
 bot.name: xmr_bingo_bot
 bot.key: 7438604237:AAH-rHbOYV5xQ1eamxwSKa9XdUuRM_hysAs

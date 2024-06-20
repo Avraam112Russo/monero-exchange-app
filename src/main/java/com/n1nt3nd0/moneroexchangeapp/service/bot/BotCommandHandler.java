@@ -1,8 +1,11 @@
 package com.n1nt3nd0.moneroexchangeapp.service.bot;
 
-import com.n1nt3nd0.moneroexchangeapp.model.TelegramBotUser;
-import com.n1nt3nd0.moneroexchangeapp.redis.RedisStorageTelegramBot;
+import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
+import com.n1nt3nd0.moneroexchangeapp.model.BotUser;
+import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
+import com.n1nt3nd0.moneroexchangeapp.dao.DaoBotState;
 import com.n1nt3nd0.moneroexchangeapp.repository.TelegramBotUserRepository;
+import com.n1nt3nd0.moneroexchangeapp.service.BlockChairApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,33 +16,41 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class BotCommandHandler {
     private final TelegramClient telegramClient;
-    private final RedisStorageTelegramBot redisStorage;
+    private final DaoBotState redisStorage;
     private final TelegramBotUserRepository telegramBotUserRepository;
-    public void startCommand(Long chatId, String text, String username, String firstName, String lastName) {
+    private final BlockChairApi blockChairApi;
+    public void startCommand(Long chatId, String text, String username) {
         log.info("received new message: " + text);
-
-        Optional<TelegramBotUser> telegramBotUserByUsername = telegramBotUserRepository.findTelegramBotUserByUsername(username);
-        if (telegramBotUserByUsername.isEmpty()){
+        Optional<BotUser> mayBeUser = telegramBotUserRepository.findTelegramBotUserByUsername(username);
+        if (mayBeUser.isEmpty()){
             telegramBotUserRepository.save(
-                    TelegramBotUser.builder()
+                    BotUser.builder()
                             .username(username)
-                            .firstName(firstName)
-                            .lastName(lastName)
                             .createdAt(LocalDateTime.now())
                             .build()
             );
+            log.info("User {} saved in db successfully", username);
         }
-
-
+        BotLastState lastState = BotLastState.builder()
+                .id(UUID.randomUUID().toString())
+                .chatId(String.valueOf(chatId))
+                .lastBotStateEnum(BotStateEnum.START_COMMAND)
+                .build();
+        redisStorage.updateCurrentlyBotState(lastState);
+        BotLastState botState = redisStorage.getCurrentlyBotState(chatId.toString());
+        log.info(botState.toString());
         SendMessage sendMessage = SendMessage // Create a message object object
                 .builder()
                 .chatId(chatId)
@@ -91,7 +102,6 @@ public class BotCommandHandler {
 //                        )
                         .build())
                 .build();
-//        redisStorage.saveUser(username, firstName);
         try {
             telegramClient.execute(sendMessage);
         } catch (TelegramApiException exception) {
@@ -100,12 +110,25 @@ public class BotCommandHandler {
     }
 
     public void completeCheckoutCommand(Long chatId, String username, Double amount, String marketPriceUsd) {
-        redisStorage.saveXmrOrder(username, amount);
-        double marketPriceRub = Double.parseDouble(marketPriceUsd) * 92;
+//        redisStorage.saveXmrOrder(username, amount);
 
-        String messageText = "Средний рыночный курс XMR: " + marketPriceUsd + " USD, " + marketPriceRub + " RUB\n" +
+    }
+
+
+    public void stateCommandHandle(String chatId) {
+        BotLastState currentlyBotState = redisStorage.getCurrentlyBotState(chatId);
+        log.info(currentlyBotState.toString());
+    }
+
+    public void userTypeXmrAmountWantBuy(String text, Long chatId, String username) {
+        redisStorage.saveAmountXmrUserWantBuy(chatId.toString(), Double.parseDouble(text), username);
+        String marketPriceUsd = blockChairApi.fetchLastMarketPriceXmr();
+        double marketPriceRub = Double.parseDouble(marketPriceUsd) * 92; // 15.970, 283729378293
+        Double truncatedMarketPriceRub = BigDecimal.valueOf(marketPriceRub).setScale(3, RoundingMode.HALF_UP).doubleValue(); // 15.970, 283
+        Double checkOutSum = Double.parseDouble(text) * marketPriceRub;
+        String messageText = "Средний рыночный курс XMR: " + marketPriceUsd + " USD, " + truncatedMarketPriceRub + " RUB\n" +
                 "\n" +
-                "Вы получите: " + amount + " xmr\n" +
+                "Вы получите: " + text + " xmr\n" +
                 "\n" +
                 "Ваш внутренний баланс кошелька: 17 руб.\n" +
                 "\n" +
@@ -121,18 +144,18 @@ public class BotCommandHandler {
                         .keyboard(List.of(
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Сбербанк")
+                                        .text("Сбербанк (%s) RUB.".formatted(checkOutSum))
                                         .callbackData("Сбербанк")
                                         .build()
                                 ), new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Тинькоф")
+                                        .text("Тинькоф (%s) RUB.".formatted(checkOutSum))
                                         .callbackData("Тинькоф")
                                         .build()
                                 ),
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Альфа банк")
+                                        .text("Альфа Банк (%s) RUB.".formatted(checkOutSum))
                                         .callbackData("Альфа банк")
                                         .build()
                                 )
@@ -153,10 +176,15 @@ public class BotCommandHandler {
                 .build();
         try {
             telegramClient.execute(sendMessage);
+            redisStorage.updateCurrentlyBotState(
+                    BotLastState.builder()
+                            .chatId(String.valueOf(chatId))
+                            .lastBotStateEnum(BotStateEnum.USER_TYPE_AMOUNT_XMR_WANT_BUY)
+                            .id(UUID.randomUUID().toString())
+                            .build()
+            );;
         } catch (TelegramApiException exception) {
             throw new RuntimeException("Telegram API exception while start command", exception);
         }
     }
-
-
 }

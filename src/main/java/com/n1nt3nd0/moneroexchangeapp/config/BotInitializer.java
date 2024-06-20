@@ -1,14 +1,9 @@
 package com.n1nt3nd0.moneroexchangeapp.config;
 
-import com.n1nt3nd0.moneroexchangeapp.service.bot.TelegramBot;
+import com.n1nt3nd0.moneroexchangeapp.service.bot.TelegramBotService;
 import jakarta.annotation.PostConstruct;
-import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -17,7 +12,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Slf4j
 @RequiredArgsConstructor
 public class BotInitializer {
-    private final TelegramBot telegramBot;
+    private final TelegramBotService telegramBot;
     @PostConstruct
     public void init() {
         try {

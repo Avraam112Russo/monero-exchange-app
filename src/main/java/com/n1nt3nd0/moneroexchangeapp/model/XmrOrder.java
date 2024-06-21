@@ -1,5 +1,6 @@
 package com.n1nt3nd0.moneroexchangeapp.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,12 +15,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@RedisHash("XmlOrder")
+@Entity
+@Table(name = "t_xmr_order")
 public class XmrOrder implements Serializable {
-    private String id;
-    private LocalDateTime startDate;
-    private String username;
-    private Double amount;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+    @Column(name = "xmr_quantity")
+    private Double quantity;
+    @Column(name = "price_in_ruble")
+    private Double priceInRuble;
+    @Column(name = "payment_method")
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod payMentMethod;
+    @Column(name = "address")
     private String address;
-    private Boolean status;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private BotUser botUser;
+
 }

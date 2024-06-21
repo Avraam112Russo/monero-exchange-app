@@ -109,8 +109,79 @@ public class BotCommandHandler {
         }
     }
 
-    public void completeCheckoutCommand(Long chatId, String username, Double amount, String marketPriceUsd) {
-//        redisStorage.saveXmrOrder(username, amount);
+    public void sendingConfirmMessage(long chatId, String text, String username) {
+        Double amountXmrUserWantBuy = redisStorage.getAmountXmrUserWantBuy(String.valueOf(chatId));
+        String message =
+                "Время на оплату заказа 15 минут! \n" +
+                        "\n" +
+                        "Средства отправленные без заявки, возврату НЕ подлежат! Оплачивать вы должны ровно ту сумму, которая указана в заявке, иначе мы ваш платеж не найдем!  Все претензии по обмену принимаются в течении 24 часов. \n" +
+                        "Обращаем внимание: средства вы должны отправлять только со своей личной карты. Администрация может потребовать верификацию документов клиента или задержать обмен для проверки других данных.\n" +
+                        "\n" +
+                        "Итого к оплате: "+ amountXmrUserWantBuy +"\n" +
+                        "\n" +
+                        "ВНИМАТЕЛЬНО сверяйте адрес своего кошелька!\n" +
+                        "\n" +
+                        "После оплаты средства будут переведены на кошелек: " + text + "\n" +
+                        "\n" +
+                        " \n" +
+                        "\n" +
+                        "Если у вас есть вопрос, или возникли проблемы с оплатой, пишите поддержке: @BINGO_SUPPORT\n" +
+                        "\n" +
+                        "Вы согласны на обмен?";
+
+
+        SendMessage sendMessage = SendMessage // Create a message object object
+                .builder()
+                .chatId(chatId)
+                .text(message)
+                // Set the keyboard markup
+                .replyMarkup(InlineKeyboardMarkup
+                        .builder()
+                        .keyboard(List.of(
+                                new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Согласен")
+                                        .callbackData("Согласен")
+                                        .build()
+                                ), new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Отмена")
+                                        .callbackData("Отмена сделки")
+                                        .build()
+                                ),
+                                new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Списать с баланса 16 RUB")
+                                        .callbackData("Списать с баланса")
+                                        .build()
+                                )
+                        ))
+//                        .keyboardRow(
+//                                new InlineKeyboardRow(InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Купить xmr")
+//                                        .callbackData("Купить xmr")
+//                                        .build(), InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Партнерская программа")
+//                                        .callbackData("Партнерская программа")
+//                                        .build()
+//                                )
+//                        )
+                        .build())
+                .build();
+        try {
+            telegramClient.execute(sendMessage);
+            redisStorage.updateCurrentlyBotState(
+                    BotLastState.builder()
+                            .chatId(String.valueOf(chatId))
+                            .lastBotStateEnum(BotStateEnum.USER_TYPE_XMR_ADDRESS)
+                            .id(UUID.randomUUID().toString())
+                            .build()
+            );;
+        } catch (TelegramApiException exception) {
+            throw new RuntimeException("Telegram API exception while start command", exception);
+        }
 
     }
 
@@ -186,5 +257,10 @@ public class BotCommandHandler {
         } catch (TelegramApiException exception) {
             throw new RuntimeException("Telegram API exception while start command", exception);
         }
+    }
+
+    public void saveUserXmrAddress(String text, long chatID, String username) {
+        redisStorage.saveUserXmrAddress(text, String.valueOf(chatID));
+        sendingConfirmMessage(chatID, text, username);
     }
 }

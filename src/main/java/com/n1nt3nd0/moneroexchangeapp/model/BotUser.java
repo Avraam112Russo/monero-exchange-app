@@ -23,5 +23,6 @@ public class BotUser {
     private String username;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @Column(name = "chat_id")
+    private Long chatId;
 }

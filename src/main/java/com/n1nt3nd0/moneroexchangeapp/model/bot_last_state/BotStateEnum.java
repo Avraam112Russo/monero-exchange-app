@@ -5,5 +5,8 @@ import java.io.Serializable;
 public enum BotStateEnum implements Serializable {
     START_COMMAND,
     BUY_XMR_COMMAND,
-    USER_TYPE_AMOUNT_XMR_WANT_BUY
+    USER_TYPE_AMOUNT_XMR_WANT_BUY,
+    USER_CHOOSE_SBERBANK_PAYMENT,
+    USER_TYPE_XMR_ADDRESS,
+    USER_CREATED_NEW_XMR_EXCHANGE_ORDER
 }

@@ -1,25 +1,49 @@
 package com.n1nt3nd0.moneroexchangeapp.config;
 
+import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.TelegramBotService;
+import com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class BotInitializer {
     private final TelegramBotService telegramBot;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final StartCommand startCommand;
+    private final BuyMoneroCommand buyMoneroCommand;
+    private final UserTypeAmountXmrCommand userTypeAmountXmrCommand;
+    private final UserChooseSberbankCommand userChooseSberbankCommand;
+    private final SendConfirmMessageCommand sendConfirmMessageCommand;
+    private final NewXmrExchangeOrderCommand newXmrExchangeOrderCommand;
     @PostConstruct
     public void init() {
         try {
-            String botToken = "";
+            String botToken = "7438604237:AAH-rHbOYV5xQ1eamxwSKa9XdUuRM_hysAs";
+            String key = "bot_commands";
              TelegramBotsLongPollingApplication botsApplication =
                     new TelegramBotsLongPollingApplication();
             botsApplication.registerBot(botToken, telegramBot);
+            // key 1 = value 2
+            redisTemplate.opsForHash().put(key, "/start", startCommand);
+            redisTemplate.opsForHash().put(key, "/buy_monero", buyMoneroCommand);
+            redisTemplate.opsForHash().put(key,  "/user_type_xmr_amount", userTypeAmountXmrCommand);
+            redisTemplate.opsForHash().put(key,  "Сбербанк", userChooseSberbankCommand);
+            redisTemplate.opsForHash().put(key,  "/confirm_message", sendConfirmMessageCommand);
+            redisTemplate.opsForHash().put(key,  "/Согласен", newXmrExchangeOrderCommand);
+
+
+            log.info("Commands set complete.");
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }

@@ -29,6 +29,13 @@ public class BotCallBackQueryHandler {
         switch (call_data) {
             case "Купить xmr" :
                 buyMoneroCommand(chat_id, username, message_id );
+                break;
+            case "Сбербанк" :
+                userChooseSberbankPaymentCommand(chat_id, message_id);
+                break;
+            case "Согласен" :
+                createNewXmrOrder(username, chat_id, message_id);
+                break;
         }
 //
 //        // Set variables
@@ -87,6 +94,58 @@ public class BotCallBackQueryHandler {
 //                throw new RuntimeException();
 //            }
 //        }
+    }
+
+    private void createNewXmrOrder(String username, long chatId, long messageId) {
+        String text = "Время на оплату вашего заказа № 80475992 15 минут!\n" +
+                "\n" +
+                "Средства отправленные без заявки, возврату НЕ подлежат! Оплачивать вы должны ровно ту сумму, которая указана в заявке, иначе мы ваш платеж не найдем!  Все претензии по обмену принимаются в течении 24 часов. \n" +
+                "Обращаем внимание: средства вы должны отправлять только со своей личной карты. Администрация может потребовать верификацию документов клиента или задержать обмен для проверки других данных.\n" +
+                "\n" +
+                "Для зачисления 0,50000000 XMR, Вам надо оплатить: 8 542 руб.\n" +
+                "\n" +
+                "Итого к оплате: 8 542 руб.\n" +
+                "\n" +
+                "После оплаты средства будут переведены на кошелек XMR 88rUszsaDgx9RBaL5e6dgcaLX64skLRfLdsVRS3s3zPmj7p3mtcfCuVV86R9F47kgJEJkXKHBKkM3NY7axwa4Cd6Ptx6hRg\n" +
+                "\n" +
+                "Если у вас есть вопрос, или возникли проблемы с оплатой, пишите поддержке: @MONOPOLYBANKER \n" +
+                "\n" +
+                "Реквизиты для оплаты - перевод СТРОГО на Сбербанк по номеру телефона:";
+    }
+
+    private void userChooseSberbankPaymentCommand(long chatId, long messageID) {
+        String answer = "Скопируйте и отправьте боту свой кошелек XMR";
+        daoBotState.savePaymentMethod(String.valueOf(chatId), "SBER");
+        EditMessageText new_message = EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(toIntExact(messageID))
+                .text(answer)
+                .replyMarkup(InlineKeyboardMarkup
+                        .builder()
+                        .keyboardRow(
+                                new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Отмена")
+                                        .callbackData("Отмена")
+                                        .build()
+                                )
+                        )
+                        .build())
+                .build();
+        try {
+            telegramClient.execute(new_message);
+            daoBotState.updateCurrentlyBotState(
+                    BotLastState.builder()
+                            .chatId(String.valueOf(chatId))
+                            .lastBotStateEnum(BotStateEnum.USER_CHOOSE_SBERBANK_PAYMENT)
+                            .id(UUID.randomUUID().toString())
+                            .build()
+            );;
+        } catch (TelegramApiException e) {
+            log.error("error while update has callback query: " + e.getMessage());
+            throw new RuntimeException();
+        }
+
     }
 
     private void buyMoneroCommand(long chatId, String username, long messageID) {

@@ -94,8 +94,19 @@ public class DaoBotState implements Serializable {
         if (xmrOrderByBotUser.isPresent()){
             return xmrOrderByBotUser.get();
         }
-        else {
-            throw new RuntimeException("Xmr Order not found");
+        throw new RuntimeException("Xmr order not found");
+    }
+    public void deleteOrderIfUserAlreadyHaveIt(String username){
+        Optional<XmrOrder> xmrOrderByBotUser = xmrExchangeOrderRepository.findXmrOrderByBotUser(username);
+        if (xmrOrderByBotUser.isPresent()){
+            xmrExchangeOrderRepository.delete(xmrOrderByBotUser.get());
+        }
+    }
+
+    public void removeXmrOrder(String username) {
+        Optional<XmrOrder> xmrOrderByBotUser = xmrExchangeOrderRepository.findXmrOrderByBotUser(username);
+        if (xmrOrderByBotUser.isPresent()){
+            xmrExchangeOrderRepository.delete(xmrOrderByBotUser.get());
         }
     }
 }

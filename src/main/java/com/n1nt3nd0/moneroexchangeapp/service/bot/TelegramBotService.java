@@ -45,6 +45,9 @@ public class TelegramBotService implements LongPollingSingleThreadUpdateConsumer
                 }
 
             }
+            if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getChatId() == 7319257049L){ // handle admin commands
+
+            }
 
 
             BotCommand command = (BotCommand) redisTemplate.opsForHash().get("bot_commands", text);

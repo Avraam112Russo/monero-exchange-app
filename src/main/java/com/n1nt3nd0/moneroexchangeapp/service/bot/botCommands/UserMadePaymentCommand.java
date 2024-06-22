@@ -5,6 +5,7 @@ import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
 import com.n1nt3nd0.moneroexchangeapp.model.XmrOrder;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.TelegramBotUserRepository;
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -41,9 +42,6 @@ public class UserMadePaymentCommand implements BotCommand{
                 .chatId(chatId)
                 .messageId(toIntExact(messageId))
                 .text(answer)
-                .replyMarkup(InlineKeyboardMarkup
-                        .builder()
-                        .build())
                 .build();
 
         XmrOrder newXmrExchangeOrder = daoBotState.getNewXmrExchangeOrder(username);
@@ -60,9 +58,28 @@ public class UserMadePaymentCommand implements BotCommand{
                 "Xmr address: " + xmrAddress + "\n" +
                 "";
 
+
+
         SendMessage SEND_MESSAGE_TO_ADMIN = SendMessage // Create a message object object
                 .builder()
                 .chatId(7319257049L)
+                // Set the keyboard markup
+                .replyMarkup(InlineKeyboardMarkup
+                        .builder()
+                        .keyboard(List.of(
+                                new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Подтвердить платеж")
+                                        .callbackData("Подтвердить платеж")
+                                        .build()
+                                ), new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Платеж не найден")
+                                        .callbackData("Платеж не найден")
+                                        .build()
+                                )
+                        ))
+                        .build())
                 .text(message)
                 // Set the keyboard markup
                 .build();

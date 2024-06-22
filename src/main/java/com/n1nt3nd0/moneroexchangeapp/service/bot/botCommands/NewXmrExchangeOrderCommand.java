@@ -24,7 +24,6 @@ import static java.lang.Math.toIntExact;
 
 @Component
 @Slf4j
-
 public class NewXmrExchangeOrderCommand implements BotCommand{
     @Override
     public void execute(Update update, TelegramClient telegramClient, DaoBotState daoBotState, TelegramBotUserRepository telegramBotUserRepository, RestTemplate restTemplate) {
@@ -46,8 +45,9 @@ public class NewXmrExchangeOrderCommand implements BotCommand{
                 .quantity(quantityXmrOrder)
                 .priceInRuble(sumForPayInRuble)
                 .build();
+        daoBotState.deleteOrderIfUserAlreadyHaveIt(username);
         daoBotState.saveNewXmrExchangeOrder(order);
-
+        log.info(order.toString() + "saved successfully");
         int orderId = 109230923;
         String text = "Время на оплату вашего заказа № " + orderId + " 15 минут!\n" +
                 "\n" +

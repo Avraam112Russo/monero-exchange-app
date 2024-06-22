@@ -4,7 +4,6 @@ import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
 import com.n1nt3nd0.moneroexchangeapp.model.XmrOrder;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.XmrExchangeOrderRepository;
-import com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands.NewXmrExchangeOrderCommand;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -88,6 +88,15 @@ public class DaoBotState implements Serializable {
     public void saveNewXmrExchangeOrder(XmrOrder xmrOrder){
         xmrExchangeOrderRepository.save(xmrOrder);
         log.info("Order {} saved successfully in db", xmrOrder);
+    }
+    public XmrOrder getNewXmrExchangeOrder(String username){
+        Optional<XmrOrder> xmrOrderByBotUser = xmrExchangeOrderRepository.findXmrOrderByBotUser(username);
+        if (xmrOrderByBotUser.isPresent()){
+            return xmrOrderByBotUser.get();
+        }
+        else {
+            throw new RuntimeException("Xmr Order not found");
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
 import com.n1nt3nd0.moneroexchangeapp.model.BotUser;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.TelegramBotUserRepository;
+import com.vdurmont.emoji.EmojiParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -56,6 +57,7 @@ public class StartCommand implements BotCommand, Serializable {
                     BotUser.builder()
                             .username(username)
                             .createdAt(LocalDateTime.now())
+                            .chatId(chatId)
                             .build()
             );
             log.info("User {} saved in db successfully", username);
@@ -68,23 +70,25 @@ public class StartCommand implements BotCommand, Serializable {
         daoBotState.updateCurrentlyBotState(lastState);
         BotLastState botState = daoBotState.getCurrentlyBotState(chatId.toString());
         log.info(botState.toString());
+        String answer = EmojiParser.parseToUnicode("Here is ✅ a smile emoji: :smile:\n\n Here is alien emoji: :alien:");
         SendMessage sendMessage = SendMessage // Create a message object object
                 .builder()
                 .chatId(chatId)
-                .text("Бот обменник\n" +
+                .text("Бот обменник ✅\n" +
                         "\n" +
                         "Тут ты можешь обменять свои RUB на XMR\n" +
                         "\n" +
                         "Жми кнопку  Купить XMR или просто введи сумму в RUB или XMR\n" +
                         "\n" +
                         "Пример: 0.1 или 0,1 или 5030")
+//                .text(answer)
                 // Set the keyboard markup
                 .replyMarkup(InlineKeyboardMarkup
                         .builder()
                         .keyboard(List.of(
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Купить xmr")
+                                        .text(EmojiParser.parseToUnicode(" \uD83D\uDC49 Купить xmr \uD83D\uDC48"))
                                         .callbackData("Купить xmr")
                                         .build()
                                 ), new InlineKeyboardRow(InlineKeyboardButton

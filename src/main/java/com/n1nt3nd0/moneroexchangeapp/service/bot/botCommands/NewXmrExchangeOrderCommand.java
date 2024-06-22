@@ -75,7 +75,7 @@ public class NewXmrExchangeOrderCommand implements BotCommand{
                                     new InlineKeyboardRow(InlineKeyboardButton
                                             .builder()
                                             .text("Я оплатил")
-                                            .callbackData("Я оплатил")
+                                            .callbackData("/Оплатил")
                                             .build()
                                     ),
                                             new InlineKeyboardRow(InlineKeyboardButton

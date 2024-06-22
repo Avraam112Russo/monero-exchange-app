@@ -26,6 +26,7 @@ public class BotInitializer {
     private final UserChooseSberbankCommand userChooseSberbankCommand;
     private final SendConfirmMessageCommand sendConfirmMessageCommand;
     private final NewXmrExchangeOrderCommand newXmrExchangeOrderCommand;
+    private final UserMadePaymentCommand userMadePaymentCommand;
     @PostConstruct
     public void init() {
         try {
@@ -41,6 +42,7 @@ public class BotInitializer {
             redisTemplate.opsForHash().put(key,  "Сбербанк", userChooseSberbankCommand);
             redisTemplate.opsForHash().put(key,  "/confirm_message", sendConfirmMessageCommand);
             redisTemplate.opsForHash().put(key,  "/Согласен", newXmrExchangeOrderCommand);
+            redisTemplate.opsForHash().put(key,  "/Оплатил", userMadePaymentCommand);
 
 
             log.info("Commands set complete.");

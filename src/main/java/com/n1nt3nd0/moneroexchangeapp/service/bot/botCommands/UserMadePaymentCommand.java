@@ -1,7 +1,9 @@
 package com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands;
 
 import com.n1nt3nd0.moneroexchangeapp.dao.DaoBotState;
+import com.n1nt3nd0.moneroexchangeapp.dto.XmrOrderDto;
 import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
+import com.n1nt3nd0.moneroexchangeapp.model.PaymentMethod;
 import com.n1nt3nd0.moneroexchangeapp.model.XmrOrder;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.TelegramBotUserRepository;
@@ -49,37 +51,44 @@ public class UserMadePaymentCommand implements BotCommand{
         String amountToBePaid = newXmrExchangeOrder.getPriceInRuble().toString();
         String xmrQuantity = newXmrExchangeOrder.getQuantity().toString();
         String xmrAddress = newXmrExchangeOrder.getAddress();
-        String message = "User made payment. Please, check transaction and send to coins. \n" +
+        String message = "The User has made a payment. Please, check the transaction and send the coins. \n" +
                 "\n" +
                 "Payment method: " + paymentMethod + "\n" +
                 "Amount to be paid: " + amountToBePaid + "\n" +
                 "Username: " + username + "\n" +
-                "XMR quamtity: " + xmrQuantity + "\n" +
+                "XMR quantity: " + xmrQuantity + "\n" +
                 "Xmr address: " + xmrAddress + "\n" +
                 "";
-
+        XmrOrderDto orderDto = XmrOrderDto.builder()
+                .paymentMethod(PaymentMethod.valueOf(paymentMethod))
+                .username(username)
+                .xmrQuantity(Double.parseDouble(xmrQuantity))
+                .amountToBePaid(amountToBePaid)
+                .xmrAddressForSending(xmrAddress)
+                .build();
+        daoBotState.putXmrOrderDto(orderDto);
 
 
         SendMessage SEND_MESSAGE_TO_ADMIN = SendMessage // Create a message object object
                 .builder()
                 .chatId(7319257049L)
-                // Set the keyboard markup
-                .replyMarkup(InlineKeyboardMarkup
-                        .builder()
-                        .keyboard(List.of(
-                                new InlineKeyboardRow(InlineKeyboardButton
-                                        .builder()
-                                        .text("Подтвердить платеж")
-                                        .callbackData("Подтвердить платеж")
-                                        .build()
-                                ), new InlineKeyboardRow(InlineKeyboardButton
-                                        .builder()
-                                        .text("Платеж не найден")
-                                        .callbackData("Платеж не найден")
-                                        .build()
-                                )
-                        ))
-                        .build())
+//                // Set the keyboard markup
+//                .replyMarkup(InlineKeyboardMarkup
+//                        .builder()
+//                        .keyboard(List.of(
+//                                new InlineKeyboardRow(InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Подтвердить платеж")
+//                                        .callbackData("/confirmPaymentAdminCommand")
+//                                        .build()
+//                                ), new InlineKeyboardRow(InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Платеж не найден")
+//                                        .callbackData("Платеж не найден")
+//                                        .build()
+//                                )
+//                        ))
+//                        .build())
                 .text(message)
                 // Set the keyboard markup
                 .build();

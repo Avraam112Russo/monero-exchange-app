@@ -115,7 +115,7 @@ public class BotCallBackQueryHandler {
 
     private void userChooseSberbankPaymentCommand(long chatId, long messageID) {
         String answer = "Скопируйте и отправьте боту свой кошелек XMR";
-        daoBotState.savePaymentMethod(String.valueOf(chatId), "SBER");
+        daoBotState.putPaymentMethod(String.valueOf(chatId), "SBER");
         EditMessageText new_message = EditMessageText.builder()
                 .chatId(chatId)
                 .messageId(toIntExact(messageID))

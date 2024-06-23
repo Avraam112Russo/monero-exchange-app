@@ -192,7 +192,7 @@ public class BotCommandHandler {
     }
 
     public void userTypeXmrAmountWantBuy(String text, Long chatId, String username) {
-        redisStorage.saveAmountXmrUserWantBuy(chatId.toString(), Double.parseDouble(text), username);
+        redisStorage.putAmountXmrUserWantBuy(chatId.toString(), Double.parseDouble(text), username);
         String marketPriceUsd = blockChairApi.fetchLastMarketPriceXmr();
         double marketPriceRub = Double.parseDouble(marketPriceUsd) * 92; // 15.970, 283729378293
         Double truncatedMarketPriceRub = BigDecimal.valueOf(marketPriceRub).setScale(3, RoundingMode.HALF_UP).doubleValue(); // 15.970, 283

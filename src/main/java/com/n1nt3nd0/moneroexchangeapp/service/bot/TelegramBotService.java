@@ -28,6 +28,7 @@ public class TelegramBotService implements LongPollingSingleThreadUpdateConsumer
     private final BotCommandHandler botCommandHandler;
     private final BotCallBackQueryHandler botCallBackQueryHandler;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final AdminCommandHandler adminCommandHandler;
     private final DaoBotState daoBotState;
     private final RestTemplate restTemplate;
     @SneakyThrows
@@ -45,9 +46,6 @@ public class TelegramBotService implements LongPollingSingleThreadUpdateConsumer
                 }
 
             }
-            if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getChatId() == 7319257049L){ // handle admin commands
-
-            }
 
 
             BotCommand command = (BotCommand) redisTemplate.opsForHash().get("bot_commands", text);
@@ -62,7 +60,10 @@ public class TelegramBotService implements LongPollingSingleThreadUpdateConsumer
                 user_type_xmr_amount.execute(update, telegramClient, daoBotState, telegramBotUserRepository, restTemplate);
             }
 
-
+            if (chatId == 7319257049L){
+                adminCommandHandler.handleAdminCommand(update);
+                log.info("adminCommandHandler start execute");
+            }
         }
         if (update.hasCallbackQuery()) {
             String call_data = update.getCallbackQuery().getData();
@@ -70,6 +71,11 @@ public class TelegramBotService implements LongPollingSingleThreadUpdateConsumer
             if (command != null){
                 command.execute(update, telegramClient, daoBotState, telegramBotUserRepository, restTemplate);
             }
+
+
+
+
+
         }
     }
 

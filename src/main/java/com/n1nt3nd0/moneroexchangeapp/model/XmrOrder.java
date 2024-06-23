@@ -11,11 +11,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 //
-//@NamedEntityGraph(name = "xmr_order.bot_user",
-//        attributeNodes = {
-//                @NamedAttributeNode(value = "botUser"),
-//        }
-//)
+@NamedEntityGraph(name = "xmr_order.bot_user",
+        attributeNodes = {
+                @NamedAttributeNode(value = "botUser"),
+        }
+)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -1,6 +1,8 @@
 package com.n1nt3nd0.moneroexchangeapp.model;
 
-public enum PaymentMethod {
+import java.io.Serializable;
+
+public enum PaymentMethod implements Serializable {
     SBER,
     ALFA,
     T_BANK,

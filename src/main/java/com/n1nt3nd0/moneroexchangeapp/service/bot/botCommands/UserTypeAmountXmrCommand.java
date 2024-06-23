@@ -3,10 +3,8 @@ package com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands;
 import com.jayway.jsonpath.JsonPath;
 import com.n1nt3nd0.moneroexchangeapp.dao.DaoBotState;
 import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
-import com.n1nt3nd0.moneroexchangeapp.model.BotUser;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.TelegramBotUserRepository;
-import com.n1nt3nd0.moneroexchangeapp.service.BlockChairApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,12 +18,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -55,16 +50,17 @@ public class UserTypeAmountXmrCommand implements BotCommand {
                               RestTemplate restTemplate
 
     ) {
-        daoBotState.saveAmountXmrUserWantBuy(chatId.toString(), Double.parseDouble(text), username);
+        daoBotState.putAmountXmrUserWantBuy(chatId.toString(), Double.parseDouble(text), username);
         UriComponentsBuilder uriComponentsBuilder =
                 UriComponentsBuilder.fromHttpUrl("https://api.blockchair.com/monero/stats");
         Object response = restTemplate.getForObject(uriComponentsBuilder.toUriString(), Object.class);
         String lastXmrMarketPrice = JsonPath.parse(response).read("$.context.market_price_usd", String.class);
         log.info(lastXmrMarketPrice);
-        daoBotState.saveCurrentlyXmrMarketPrice(lastXmrMarketPrice, chatId.toString());
+        daoBotState.putCurrentlyXmrMarketPrice(lastXmrMarketPrice, chatId.toString());
         double marketPriceRub = Double.parseDouble(lastXmrMarketPrice) * 92; // 15.970, 283729378293
         Double truncatedMarketPriceRub = BigDecimal.valueOf(marketPriceRub).setScale(3, RoundingMode.HALF_UP).doubleValue(); // 15.970, 283
         Double checkOutSum = Double.parseDouble(text) * marketPriceRub;
+        double truncateCheckOutSum = Math.floor(checkOutSum * 100) / 100;
         String messageText = "Средний рыночный курс XMR: " + lastXmrMarketPrice + " USD, " + truncatedMarketPriceRub + " RUB\n" +
                 "\n" +
                 "Вы получите: " + text + " xmr\n" +
@@ -83,18 +79,18 @@ public class UserTypeAmountXmrCommand implements BotCommand {
                         .keyboard(List.of(
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Сбербанк (%s) RUB.".formatted(checkOutSum))
+                                        .text("Сбербанк (%s) RUB.".formatted(truncateCheckOutSum))
                                         .callbackData("Сбербанк")
                                         .build()
                                 ), new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Тинькоф (%s) RUB.".formatted(checkOutSum))
+                                        .text("Тинькоф (%s) RUB.".formatted(truncateCheckOutSum))
                                         .callbackData("Тинькоф")
                                         .build()
                                 ),
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
-                                        .text("Альфа Банк (%s) RUB.".formatted(checkOutSum))
+                                        .text("Альфа Банк (%s) RUB.".formatted(truncateCheckOutSum))
                                         .callbackData("Альфа банк")
                                         .build()
                                 )

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface XmrExchangeOrderRepository extends JpaRepository<XmrOrder, Long> {
 
-//    @EntityGraph(value = "xmr_order.bot_user")
+    @EntityGraph(value = "xmr_order.bot_user")
     @Query(value = "select ord from XmrOrder ord where ord.botUser.username = :username ")
     Optional<XmrOrder> findXmrOrderByBotUser(@Param("username")String username);
 }

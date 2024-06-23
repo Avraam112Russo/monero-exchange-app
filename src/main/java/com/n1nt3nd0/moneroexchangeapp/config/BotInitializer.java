@@ -2,6 +2,7 @@ package com.n1nt3nd0.moneroexchangeapp.config;
 
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.TelegramBotService;
+import com.n1nt3nd0.moneroexchangeapp.service.bot.adminCommands.ConfirmPayment_AdminCommand;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -27,24 +28,28 @@ public class BotInitializer {
     private final SendConfirmMessageCommand sendConfirmMessageCommand;
     private final NewXmrExchangeOrderCommand newXmrExchangeOrderCommand;
     private final UserMadePaymentCommand userMadePaymentCommand;
+
+    private final ConfirmPayment_AdminCommand confirmPaymentAdminCommand;
     @PostConstruct
     public void init() {
         try {
             String botToken = "7438604237:AAH-rHbOYV5xQ1eamxwSKa9XdUuRM_hysAs";
-            String key = "bot_commands";
+            String botCommands = "bot_commands";
              TelegramBotsLongPollingApplication botsApplication =
                     new TelegramBotsLongPollingApplication();
             botsApplication.registerBot(botToken, telegramBot);
-            // key 1 = value 2
-            redisTemplate.opsForHash().put(key, "/start", startCommand);
-            redisTemplate.opsForHash().put(key, "/buy_monero", buyMoneroCommand);
-            redisTemplate.opsForHash().put(key,  "/user_type_xmr_amount", userTypeAmountXmrCommand);
-            redisTemplate.opsForHash().put(key,  "Сбербанк", userChooseSberbankCommand);
-            redisTemplate.opsForHash().put(key,  "/confirm_message", sendConfirmMessageCommand);
-            redisTemplate.opsForHash().put(key,  "/Согласен", newXmrExchangeOrderCommand);
-            redisTemplate.opsForHash().put(key,  "/Оплатил", userMadePaymentCommand);
+            // botCommands 1 = value 2
+            redisTemplate.opsForHash().put(botCommands, "/start", startCommand);
+            redisTemplate.opsForHash().put(botCommands, "/buy_monero", buyMoneroCommand);
+            redisTemplate.opsForHash().put(botCommands,  "/user_type_xmr_amount", userTypeAmountXmrCommand);
+            redisTemplate.opsForHash().put(botCommands,  "Сбербанк", userChooseSberbankCommand);
+            redisTemplate.opsForHash().put(botCommands,  "/confirm_message", sendConfirmMessageCommand);
+            redisTemplate.opsForHash().put(botCommands,  "/Согласен", newXmrExchangeOrderCommand);
+            redisTemplate.opsForHash().put(botCommands,  "/Оплатил", userMadePaymentCommand);
 
 
+            String botAdminCommands = "bot_admin_commands";
+            redisTemplate.opsForHash().put(botAdminCommands, "/confirm", confirmPaymentAdminCommand);
             log.info("Commands set complete.");
         } catch (TelegramApiException e) {
             log.error(e.getMessage());

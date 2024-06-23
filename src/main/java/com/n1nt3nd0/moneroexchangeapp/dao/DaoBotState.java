@@ -1,9 +1,11 @@
 package com.n1nt3nd0.moneroexchangeapp.dao;
 
+import com.n1nt3nd0.moneroexchangeapp.dto.XmrOrderDto;
 import com.n1nt3nd0.moneroexchangeapp.model.BotLastState;
 import com.n1nt3nd0.moneroexchangeapp.model.XmrOrder;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.repository.XmrExchangeOrderRepository;
+import com.n1nt3nd0.moneroexchangeapp.service.bot.adminCommands.AdminBotCommand;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +49,7 @@ public class DaoBotState implements Serializable {
         }
         return botState;
     }
-    public void saveAmountXmrUserWantBuy(String chatID, Double amountXmrUserWantBuy, String username){
+    public void putAmountXmrUserWantBuy(String chatID, Double amountXmrUserWantBuy, String username){
         String key = "amount_xmr_user_want_buy";
         redisTemplate.opsForHash().put(key, chatID, amountXmrUserWantBuy);
         log.info("New record saved in {} \n ChatID: {}, Amount: {}, Username: {}",key, chatID, amountXmrUserWantBuy, username);
@@ -65,7 +67,7 @@ public class DaoBotState implements Serializable {
         String key = "user_xmr_address";
         return (String) redisTemplate.opsForHash().get(key, chatID);
     }
-    public void savePaymentMethod(String chatId, String paymentMethod){
+    public void putPaymentMethod(String chatId, String paymentMethod){
         String key = "payment_method";
         redisTemplate.opsForHash().put(key, chatId, paymentMethod);
         log.info("User payment method {} saved successfully", paymentMethod);
@@ -74,7 +76,7 @@ public class DaoBotState implements Serializable {
         return (String) redisTemplate.opsForHash().get("payment_method", chatID);
     }
 
-    public void saveCurrentlyXmrMarketPrice(String currentlyXmrMarketPrice, String chatID){
+    public void putCurrentlyXmrMarketPrice(String currentlyXmrMarketPrice, String chatID){
         String key = "currentlyXmrMarketPrice";
         redisTemplate.opsForHash().put(key, chatID, currentlyXmrMarketPrice);
     }
@@ -108,6 +110,27 @@ public class DaoBotState implements Serializable {
         if (xmrOrderByBotUser.isPresent()){
             xmrExchangeOrderRepository.delete(xmrOrderByBotUser.get());
         }
+    }
+    public void putXmrOrderDto(XmrOrderDto xmrOrderDto){
+        String KEY = "xmr_order_dto";
+        redisTemplate.opsForHash().put(KEY, xmrOrderDto.getUsername(), xmrOrderDto);
+        log.info("XmrOrderDto saved in redis successfully {}", xmrOrderDto.toString());
+    }
+    public XmrOrderDto getXmrOrderDto(String userName){
+        String KEY = "xmr_order_dto";
+        XmrOrderDto orderDto =(XmrOrderDto) redisTemplate.opsForHash().get(KEY, userName);
+        if (orderDto != null){
+            return orderDto;
+        }
+        throw new RuntimeException("XmrOrderDto not found");
+    }
+    public AdminBotCommand getAdminCommands(String commandName){
+        String key = "bot_admin_commands";
+        AdminBotCommand adminBotCommand = (AdminBotCommand) redisTemplate.opsForHash().get(key, commandName);
+        if (adminBotCommand != null){
+            return adminBotCommand;
+        }
+        throw new RuntimeException("Admin command not found");
     }
 }
 

@@ -51,6 +51,7 @@ public class UserMadePaymentCommand implements BotCommand{
         String amountToBePaid = newXmrExchangeOrder.getPriceInRuble().toString();
         String xmrQuantity = newXmrExchangeOrder.getQuantity().toString();
         String xmrAddress = newXmrExchangeOrder.getAddress();
+        Long orderId = newXmrExchangeOrder.getId();
         String message = "The User has made a payment. Please, check the transaction and send the coins. \n" +
                 "\n" +
                 "Payment method: " + paymentMethod + "\n" +
@@ -58,8 +59,11 @@ public class UserMadePaymentCommand implements BotCommand{
                 "Username: " + username + "\n" +
                 "XMR quantity: " + xmrQuantity + "\n" +
                 "Xmr address: " + xmrAddress + "\n" +
+                "Order id: " + orderId +
                 "";
         XmrOrderDto orderDto = XmrOrderDto.builder()
+                .chatId(chatId)
+                .orderId(orderId)
                 .paymentMethod(PaymentMethod.valueOf(paymentMethod))
                 .username(username)
                 .xmrQuantity(Double.parseDouble(xmrQuantity))

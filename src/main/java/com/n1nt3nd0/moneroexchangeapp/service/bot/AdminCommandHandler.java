@@ -21,7 +21,7 @@ public class AdminCommandHandler {
     public void handleAdminCommand(Update update) {
         String text = update.getMessage().getText();
         String[] result = text.split("#");
-        String commandName = result[0]; // confirm_someusername
+        String commandName = result[0]; // /confirm#someusername  /complete#someusername
         String username = result[1];
         AdminBotCommand confirmPaymentCommand = daoBotState.getAdminCommands(commandName);
         confirmPaymentCommand.execute(update, daoBotState, telegramClient, username);

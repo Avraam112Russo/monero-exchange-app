@@ -13,6 +13,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 public class XmrOrderDto implements Serializable {
+    private Long orderId;
+    private Long chatId;
     private PaymentMethod paymentMethod;
     private String amountToBePaid;
     private String username;

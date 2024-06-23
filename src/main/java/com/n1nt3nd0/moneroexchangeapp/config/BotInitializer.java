@@ -3,6 +3,7 @@ package com.n1nt3nd0.moneroexchangeapp.config;
 import com.n1nt3nd0.moneroexchangeapp.model.bot_last_state.BotStateEnum;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.TelegramBotService;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.adminCommands.ConfirmPayment_AdminCommand;
+import com.n1nt3nd0.moneroexchangeapp.service.bot.adminCommands.SendCoins_AdminCommand;
 import com.n1nt3nd0.moneroexchangeapp.service.bot.botCommands.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class BotInitializer {
     private final UserMadePaymentCommand userMadePaymentCommand;
 
     private final ConfirmPayment_AdminCommand confirmPaymentAdminCommand;
+    private final SendCoins_AdminCommand sendCoinsAdminCommand;
     @PostConstruct
     public void init() {
         try {
@@ -50,6 +52,7 @@ public class BotInitializer {
 
             String botAdminCommands = "bot_admin_commands";
             redisTemplate.opsForHash().put(botAdminCommands, "/confirm", confirmPaymentAdminCommand);
+            redisTemplate.opsForHash().put(botAdminCommands, "/complete", sendCoinsAdminCommand);
             log.info("Commands set complete.");
         } catch (TelegramApiException e) {
             log.error(e.getMessage());

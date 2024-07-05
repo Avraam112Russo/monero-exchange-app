@@ -126,6 +126,16 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.3</version>
+                <configuration>
+                    <to>
+                        <image>registry.hub.docker.com/lowpos112/google-jib-image-example</image>
+                    </to>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

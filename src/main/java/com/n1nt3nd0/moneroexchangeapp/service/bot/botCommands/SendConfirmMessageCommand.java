@@ -74,7 +74,7 @@ public class SendConfirmMessageCommand implements BotCommand{
                                 ), new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
                                         .text("Отмена")
-                                        .callbackData("Отмена сделки")
+                                        .callbackData("Отмена")
                                         .build()
                                 ),
                                 new InlineKeyboardRow(InlineKeyboardButton

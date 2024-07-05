@@ -89,7 +89,7 @@ public class StartCommand implements BotCommand, Serializable {
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
                                         .text(EmojiParser.parseToUnicode(" \uD83D\uDC49 Купить xmr \uD83D\uDC48"))
-                                        .callbackData("Купить xmr")
+                                        .callbackData("/buy_monero")
                                         .build()
                                 ), new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
